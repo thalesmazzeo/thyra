@@ -1,4 +1,4 @@
-import HeroPrompt from "./HeroPrompt";
+import HeroPrompt from "./home/HeroPrompt";
 
 export default function Hero() {
   return (
