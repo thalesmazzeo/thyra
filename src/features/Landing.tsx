@@ -13,36 +13,47 @@ const templates = [
 export default function Landing() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function criarProjeto() {
+  async function criarProjeto() {
     if (!prompt.trim()) {
       alert("Descreva seu projeto primeiro.");
       return;
     }
 
-    setResponse(`
-📋 Projeto analisado com sucesso!
+    try {
+      setLoading(true);
+      setResponse("");
 
-Sistema solicitado:
-${prompt}
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: "thyra",
+          model: "local",
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        }),
+      });
 
-Módulos sugeridos:
+      const data = await res.json();
 
-✅ Login
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao chamar a API");
+      }
 
-✅ Dashboard
-
-✅ Cadastro de Usuários
-
-✅ Controle Financeiro
-
-✅ Relatórios
-
-✅ Banco de Dados
-
-Próximo passo:
-A THYRA iniciará o planejamento completo do sistema.
-`);
+      setResponse(data.result.content);
+    } catch (err: any) {
+      setResponse("Erro: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -78,8 +89,9 @@ A THYRA iniciará o planejamento completo do sistema.
             <button
               className="thyra-submit"
               onClick={criarProjeto}
+              disabled={loading}
             >
-              Criar projeto →
+              {loading ? "Criando..." : "Criar projeto →"}
             </button>
           </div>
         </div>
